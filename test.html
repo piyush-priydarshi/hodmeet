@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoDMeet - Smart Appointment Scheduler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .disabled-date {
+            color: #94a3b8;
+            pointer-events: none;
+        }
+        .form-input-disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+        /* Glassmorphism Card Style */
+        .glass-card {
+             background-color: rgba(0, 0, 0, 0.25);
+             backdrop-filter: blur(20px);
+             border: 1px solid rgba(255, 255, 255, 0.1);
+             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .glass-input {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        .glass-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .glass-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .dashboard-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div id="login-flow-container" class="min-h-screen p-4 flex flex-col items-center justify-center">
+    
+        <div id="role-selection-view" class="w-full max-w-md">
+            <div class="glass-card rounded-2xl p-8 text-center">
+                 <img src="component/cc.png" alt="CMRIT Logo" class="h-16 mx-auto mb-6">
+                <h1 class="text-3xl font-bold text-white mb-2 text-shadow">Welcome to HoDMeet</h1>
+                <p class="text-gray-300 mb-8">Please select your role to begin.</p>
+                <div class="space-y-4">
+                    <button data-role="Student" class="role-btn w-full p-3 bg-white/80 text-gray-800 font-semibold rounded-lg hover:bg-white transition-colors shadow-md">Login as Student</button>
+                    <button data-role="Faculty" class="role-btn w-full p-3 bg-white/80 text-gray-800 font-semibold rounded-lg hover:bg-white transition-colors shadow-md">Login as Faculty</button>
+                    <button data-role="HOD" class="role-btn w-full p-3 bg-white/80 text-gray-800 font-semibold rounded-lg hover:bg-white transition-colors shadow-md">Login as HOD</button>
+                </div>
+                <div class="mt-6 text-center">
+                    <button id="show-dev-login-btn" class="text-xs text-gray-300 hover:text-white transition-colors">Dev Admin</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="login-credentials-view" class="hidden w-full max-w-md">
+             <div class="glass-card rounded-2xl p-8 text-center relative">
+                 <button id="back-to-role-btn" class="absolute top-4 left-4 text-white/70 hover:text-white transition-colors flex items-center gap-1 text-sm">
+                     <ion-icon name="arrow-back-outline"></ion-icon>
+                     Back
+                 </button>
+                 <div class="flex justify-center mb-4">
+                     <img src="component/cc.png" alt="CMRIT Logo" class="h-16 mx-auto mb-4">
+                 </div>
+                 <h1 id="login-role-title" class="text-3xl font-bold text-white text-shadow mb-6">Login</h1>
+                 <div class="space-y-4 my-6">
+                     <input id="email-input" type="email" placeholder="Registered Email" class="w-full p-3 rounded-lg glass-input">
+                     <input id="password-input" type="password" placeholder="Password" class="w-full p-3 rounded-lg glass-input">
+                 </div>
+                 <button id="login-continue" class="w-full p-3 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-colors shadow-lg">
+                     <span>Continue</span>
+                 </button>
+             </div>
+        </div>
+
+        <div id="dev-login-view" class="hidden w-full max-w-md">
+            <div class="glass-card rounded-2xl p-8 text-center relative">
+                <button id="back-to-role-from-dev-btn" class="absolute top-4 left-4 text-white/70 hover:text-white transition-colors flex items-center gap-1 text-sm">
+                    <ion-icon name="arrow-back-outline"></ion-icon>
+                    Back
+                </button>
+                <h1 class="text-3xl font-bold text-white text-shadow mb-6">Admin Login</h1>
+                <div class="space-y-4 my-6">
+                    <input id="dev-password-input" type="password" placeholder="Admin Password" class="w-full p-3 rounded-lg glass-input">
+                </div>
+                <button id="dev-login-continue" class="w-full p-3 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-200 transition-colors shadow-lg">
+                    <span>Login</span>
+                </button>
+            </div>
+       </div>
+    </div>
+
+    <div id="dev-admin-view" class="hidden">
+        <div class="min-h-screen p-4 sm:p-6 md:p-8 flex flex-col items-center">
+            <header class="w-full max-w-3xl mb-8 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-white text-shadow">User Whitelist</h1>
+                    <p class="text-gray-200 mt-1 text-shadow">Manage registered users</p>
+                </div>
+                <button class="logout-btn px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold shadow-md">Logout</button>
+            </header>
+
+            <main class="w-full max-w-3xl bg-white/70 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-black/20 p-4 sm:p-6 md:p-8 border border-white/20">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Add New User</h2>
+                <form id="add-user-form" class="flex flex-col sm:flex-row gap-4 mb-8">
+                    <input id="new-user-email" type="email" placeholder="User Email" class="p-2 border rounded-lg flex-grow" required>
+                    <select id="new-user-role" class="p-2 border rounded-lg">
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                        <option value="hod">HOD</option>
+                    </select>
+                    <button type="submit" class="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700">Add User</button>
+                </form>
+
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Registered Users</h2>
+                <div id="user-whitelist" class="space-y-2">
+                    </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="main-dashboard-view" class="hidden">
+        <div class="min-h-screen p-4 sm:p-6 md:p-8 flex flex-col items-center">
+             <header class="w-full max-w-5xl mb-8 flex items-center justify-between">
+                 <div class="flex items-center gap-4">
+                     <img id="main-dash-user-dp" src="https://placehold.co/60x60/E2E8F0/4A5568?text=DP" alt="User DP" class="h-12 w-12 rounded-full border-2 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity">
+                     <div>
+                         <p id="main-dash-user-name" class="font-bold text-xl text-white text-shadow">User Name</p>
+                         <p id="main-dash-user-role" class="text-sm text-gray-300 text-shadow">Role</p>
+                     </div>
+                 </div>
+                 <button class="logout-btn px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold shadow-md">Logout</button>
+             </header>
+            <main class="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div id="go-to-scheduler-btn" class="glass-card rounded-2xl p-8 text-center text-white cursor-pointer dashboard-card">
+                    <ion-icon name="calendar-outline" class="text-6xl mb-4"></ion-icon>
+                    <h2 class="text-2xl font-bold">Manage My Schedule</h2>
+                    <p class="text-gray-300 mt-2">Manage your calendar for students.</p>
+                </div>
+                <div id="go-to-attendance-btn" class="glass-card rounded-2xl p-8 text-center text-white cursor-pointer dashboard-card">
+                    <ion-icon name="checkbox-outline" class="text-6xl mb-4"></ion-icon>
+                    <h2 class="text-2xl font-bold">Mark Attendance</h2>
+                    <p class="text-gray-300 mt-2">Record attendance for past meetings.</p>
+                </div>
+
+                <div id="book-with-hod-btn" class="hidden md:col-span-2 glass-card rounded-2xl p-8 text-center text-white cursor-pointer dashboard-card">
+                    <ion-icon name="person-add-outline" class="text-6xl mb-4"></ion-icon>
+                    <h2 class="text-2xl font-bold">Book Meeting with HOD</h2>
+                    <p class="text-gray-300 mt-2">Schedule an appointment on the HOD's calendar.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="scheduler-view" class="hidden">
+        <div id="app" class="min-h-screen p-4 sm:p-6 md:p-8 flex flex-col items-center">
+             <header class="w-full max-w-5xl mb-4 flex items-center justify-between">
+                 <div class="flex items-center gap-4">
+                     <img id="scheduler-user-dp" src="https://placehold.co/60x60/E2E8F0/4A5568?text=DP" alt="User DP" class="h-12 w-12 rounded-full border-2 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity">
+                     <div>
+                         <p id="scheduler-user-name" class="font-bold text-xl text-white text-shadow">User Name</p>
+                         <p id="scheduler-user-role" class="text-sm text-gray-300 text-shadow">Role</p>
+                     </div>
+                 </div>
+                 <button class="logout-btn px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold shadow-md">Logout</button>
+             </header>
+
+             <div class="w-full max-w-5xl mb-4 text-center">
+                 <button id="back-to-main-dash-btn" class="text-white/80 hover:text-white transition-colors flex items-center gap-1 text-sm mb-2 float-left">
+                     <ion-icon name="arrow-back-outline"></ion-icon>
+                     Back to Dashboard
+                 </button>
+                 <h1 id="scheduler-title" class="text-3xl sm:text-4xl font-bold text-white text-shadow inline-block">Meeting Scheduler</h1>
+             </div>
+
+
+            <main class="w-full max-w-5xl bg-white/70 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-black/20 p-4 sm:p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 border border-white/20">
+                
+                <div class="lg:col-span-2">
+                     <div class="flex items-center justify-between mb-6">
+                         <button id="prev-month" class="p-2 rounded-full hover:bg-black/10 transition-colors">
+                             <ion-icon name="chevron-back-outline" class="text-2xl text-gray-700"></ion-icon>
+                         </button>
+                         <h2 id="current-month-year" class="text-xl font-semibold text-gray-900"></h2>
+                         <button id="next-month" class="p-2 rounded-full hover:bg-black/10 transition-colors">
+                             <ion-icon name="chevron-forward-outline" class="text-2xl text-gray-700"></ion-icon>
+                         </button>
+                     </div>
+                     <div id="calendar-grid" class="grid grid-cols-7 gap-1 sm:gap-2">
+                         </div>
+                     <div class="mt-6">
+                          <button id="import-data-btn" class="w-full flex items-center justify-center gap-3 p-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors shadow-md">
+                              <ion-icon name="cloud-upload-outline" class="text-2xl"></ion-icon>
+                              <span>Import & Schedule Group Meeting</span>
+                          </button>
+                     </div>
+                </div>
+
+                <div class="lg:col-span-1 border-t lg:border-t-0 lg:border-l border-gray-900/10 lg:pl-8 pt-6 lg:pt-0">
+                    <h3 class="text-lg font-semibold mb-1">Appointments</h3>
+                    <p id="selected-date-display" class="text-sm text-gray-600 mb-4">Select a date to see schedule</p>
+                    <div id="time-slots" class="max-h-[450px] overflow-y-auto custom-scrollbar pr-2">
+                        </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+     <div id="attendance-view" class="hidden">
+        <div class="min-h-screen p-4 sm:p-6 md:p-8 flex flex-col items-center">
+             <header class="w-full max-w-5xl mb-4 flex items-center justify-between">
+                 <div class="flex items-center gap-4">
+                     <img id="attendance-user-dp" src="https://placehold.co/60x60/E2E8F0/4A5568?text=DP" alt="User DP" class="h-12 w-12 rounded-full border-2 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity">
+                     <div>
+                         <p id="attendance-user-name" class="font-bold text-xl text-white text-shadow">User Name</p>
+                         <p id="attendance-user-role" class="text-sm text-gray-300 text-shadow">Role</p>
+                     </div>
+                 </div>
+                 <button class="logout-btn px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold shadow-md">Logout</button>
+             </header>
+            
+             <div class="w-full max-w-5xl mb-4 text-center">
+                 <button id="back-to-main-dash-from-attendance-btn" class="text-white/80 hover:text-white transition-colors flex items-center gap-1 text-sm mb-2 float-left">
+                     <ion-icon name="arrow-back-outline"></ion-icon>
+                     Back to Dashboard
+                 </button>
+                 <h1 class="text-3xl sm:text-4xl font-bold text-white text-shadow inline-block">Mark Attendance</h1>
+             </div>
+
+             <main class="w-full max-w-5xl bg-white/70 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-black/20 p-4 sm:p-6 md:p-8 border border-white/20">
+                 <div class="flex items-center gap-4 mb-6">
+                     <label for="attendance-date-picker" class="font-semibold text-gray-700">Select Date:</label>
+                     <input type="date" id="attendance-date-picker" class="p-2 border rounded-lg">
+                 </div>
+                 <div id="attendance-list" class="space-y-3">
+                     <p class="text-gray-500 text-center p-4">Select a date to see student list.</p>
+                 </div>
+                  <div class="mt-6 flex justify-end">
+                     <button id="save-attendance-btn" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:bg-gray-400" disabled>Save Attendance</button>
+                 </div>
+             </main>
+        </div>
+    </div>
+
+
+    <div id="student-dashboard-view" class="hidden">
+        <div class="min-h-screen p-4 sm:p-6 md:p-8 flex flex-col items-center">
+            <header class="w-full max-w-5xl mb-8 flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-white text-shadow">My Appointments</h1>
+                    <p class="text-gray-200 mt-1 text-shadow">Your scheduled sessions</p>
+                </div>
+                <div class="flex items-center gap-4">
+                     <div class="text-right">
+                         <p id="student-user-name" class="font-semibold text-white text-shadow">Student Name</p>
+                         <p id="student-user-role" class="text-sm text-gray-300 text-shadow">Student</p>
+                     </div>
+                    <img id="student-user-dp" src="https://placehold.co/60x60/E2E8F0/4A5568?text=DP" alt="User DP" class="h-12 w-12 rounded-full border-2 border-white shadow-lg cursor-pointer hover:opacity-90 transition-opacity">
+                    <button class="logout-btn px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold shadow-md">Logout</button>
+                </div>
+            </header>
+            
+            <main class="w-full max-w-5xl bg-white/70 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-black/20 p-4 sm:p-6 md:p-8 border border-white/20">
+                
+                <div class="mb-6 flex flex-col sm:flex-row justify-end gap-3">
+                    <button id="book-with-faculty-btn-student" class="px-5 py-2 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-md flex items-center justify-center gap-2">
+                        <ion-icon name="person-add-outline" class="text-xl"></ion-icon>
+                        Book with Faculty
+                    </button>
+                    <button id="book-with-hod-btn-student" class="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-md flex items-center justify-center gap-2">
+                        <ion-icon name="school-outline" class="text-xl"></ion-icon>
+                        Book with HOD
+                    </button>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Upcoming Sessions</h2>
+                <div id="appointment-list" class="space-y-4">
+                    </div>
+            </main>
+
+            <footer class="w-full max-w-5xl mt-8 text-center">
+                <p class="text-gray-300 text-sm text-shadow">&copy; 2025 HoDMeet University. All Rights Reserved.</p>
+            </footer>
+        </div>
+    </div>
+
+
+    <div id="modal-shell" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden transition-opacity duration-300 z-50">
+        <div id="modal-content-area" class="bg-white/90 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-300">
+            </div>
+    </div>
+    
+    <div id="toast" class="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg opacity-0 translate-y-[-20px] transition-all duration-300 flex items-center gap-3 z-50">
+        <ion-icon id="toast-icon" name="checkmark-circle" class="text-2xl"></ion-icon>
+        <span id="toast-message">Success!</span>
+    </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- VIEWS ---
+    const loginFlowContainer = document.getElementById('login-flow-container');
+    const roleSelectionView = document.getElementById('role-selection-view');
+    const loginCredentialsView = document.getElementById('login-credentials-view');
+    const mainDashboardView = document.getElementById('main-dashboard-view');
+    const schedulerView = document.getElementById('scheduler-view');
+    const attendanceView = document.getElementById('attendance-view');
+    const studentDashboardView = document.getElementById('student-dashboard-view');
+    const devLoginView = document.getElementById('dev-login-view');
+    const devAdminView = document.getElementById('dev-admin-view');
+    
+    // --- LOGIN BUTTONS ---
+    const roleButtons = roleSelectionView.querySelectorAll('.role-btn');
+    const backToRoleBtn = document.getElementById('back-to-role-btn');
+    const loginContinueBtn = document.getElementById('login-continue');
+    const loginRoleTitle = document.getElementById('login-role-title');
+    const emailInput = document.getElementById('email-input');
+    const passwordInput = document.getElementById('password-input');
+
+    // --- DEV ADMIN BUTTONS ---
+    const showDevLoginBtn = document.getElementById('show-dev-login-btn');
+    const backToRoleFromDevBtn = document.getElementById('back-to-role-from-dev-btn');
+    const devPasswordInput = document.getElementById('dev-password-input');
+    const devLoginContinueBtn = document.getElementById('dev-login-continue');
+    const addUserForm = document.getElementById('add-user-form');
+    const newUserEmail = document.getElementById('new-user-email');
+    const newUserRole = document.getElementById('new-user-role');
+    const userWhitelist = document.getElementById('user-whitelist');
+
+    // --- MAIN DASHBOARD (HOD/FACULTY) ---
+    const goToSchedulerBtn = document.getElementById('go-to-scheduler-btn');
+    const goToAttendanceBtn = document.getElementById('go-to-attendance-btn');
+    const mainDashUserName = document.getElementById('main-dash-user-name');
+    const mainDashUserRole = document.getElementById('main-dash-user-role');
+    const mainDashUserDP = document.getElementById('main-dash-user-dp');
+    const backToMainDashBtn = document.getElementById('back-to-main-dash-btn');
+    const backToMainDashFromAttendanceBtn = document.getElementById('back-to-main-dash-from-attendance-btn');
+    const bookWithHodBtn = document.getElementById('book-with-hod-btn');
+
+    // --- LOGOUT ---
+    const allLogoutBtns = document.querySelectorAll('.logout-btn');
+
+    // --- SCHEDULER DOM ELEMENTS ---
+    const schedulerTitle = document.getElementById('scheduler-title');
+    const currentMonthYear = document.getElementById('current-month-year');
+    const calendarGrid = document.getElementById('calendar-grid');
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+    const selectedDateDisplay = document.getElementById('selected-date-display');
+    const timeSlotsContainer = document.getElementById('time-slots');
+    const schedulerUserName = document.getElementById('scheduler-user-name');
+    const schedulerUserRole = document.getElementById('scheduler-user-role');
+    const importDataBtn = document.getElementById('import-data-btn');
+    const schedulerUserDP = document.getElementById('scheduler-user-dp');
+    
+    // --- ATTENDANCE VIEW ELEMENTS ---
+    const attendanceDatePicker = document.getElementById('attendance-date-picker');
+    const attendanceList = document.getElementById('attendance-list');
+    const saveAttendanceBtn = document.getElementById('save-attendance-btn');
+    const attendanceUserName = document.getElementById('attendance-user-name');
+    const attendanceUserRole = document.getElementById('attendance-user-role');
+    const attendanceUserDP = document.getElementById('attendance-user-dp');
+
+    // --- STUDENT DASHBOARD ELEMENTS ---
+    const appointmentList = document.getElementById('appointment-list');
+    const studentUserName = document.getElementById('student-user-name');
+    const studentUserRole = document.getElementById('student-user-role');
+    const studentUserDP = document.getElementById('student-user-dp');
+    // NEW --> Student booking buttons
+    const bookWithHodBtnStudent = document.getElementById('book-with-hod-btn-student');
+    const bookWithFacultyBtnStudent = document.getElementById('book-with-faculty-btn-student');
+    // END NEW
+    
+    // --- MODAL & TOAST ELEMENTS ---
+    const modalShell = document.getElementById('modal-shell');
+    const modalContentArea = document.getElementById('modal-content-area');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+    const toastIcon = document.getElementById('toast-icon');
+
+    // --- STATE ---
+    let currentDate = new Date();
+    let selectedDate = new Date();
+    let currentUserRole = null;
+    let viewingCalendarFor = 'hod'; 
+    let bookingModalDate = new Date();
+    let bookingModalSelectedDate = new Date();
+    
+    // --- HELPER FUNCTIONS ---
+    const toYYYYMMDD = (date) => date.toISOString().split('T')[0];
+    const toHHMM = (date) => date.toTimeString().substring(0, 5);
+
+    // --- USER DATA STORE ---
+    let userData = {
+        student: {
+            name: 'Piyush',
+            email: 'piyush.cse24@cmrit.ac.in',
+            phone: '9667938325',
+            stream: 'CSE',
+            section: 'B',
+            usn: '1CR24CS127',
+            dp: 'https.placehold.co/60x60/E2E8F0/4A5568?text=P'
+        },
+        faculty: {
+            name: "Kavyashree Ma'am",
+            email: 'kavyashree100@cmrit.ac.in',
+            phone: '1234567890',
+            id: '12394FJ',
+            dp: 'https.placehold.co/60x60/E2E8F0/4A5568?text=K'
+        },
+        hod: {
+            name: 'Keshav Sir',
+            email: 'keshav1cse@cmrit.ac.in',
+            branch: 'CSE',
+            phone: '9876543210',
+            dp: 'https.placehold.co/60x60/E2E8F0/4A5568?text=HOD'
+        }
+    };
+
+    // --- DATA STORE ---
+    let hodCalendar = {}; 
+    let facultyCalendar = {};
+    let currentUserAppointments = []; 
+    
+    let allowedUsers = {
+         'piyush.cse24@cmrit.ac.in': 'student',
+         'kavyashree100@cmrit.ac.in': 'faculty',
+         'keshav1cse@cmrit.ac.in': 'hod'
+    };
+    
+    const hodAvailability = {
+        1: { start: '09:00', end: '17:00' }, // Monday
+        2: { start: '09:00', end: '17:00' }, // Tuesday
+        3: { start: '09:00', end: '13:00' }, // Wednesday
+        4: { start: '09:00', end: '17:00' }, // Thursday
+        5: { start: '13:00', end: '17:00' }, // Friday
+    };
+    
+    const facultyAvailability = { 
+        1: { start: '10:00', end: '16:00' }, // Monday
+        2: { start: '10:00', end: '16:00' }, // Tuesday
+        3: { start: '09:00', end: '12:00' }, // Wednesday
+        4: { start: '10:00', end: '16:00' }, // Thursday
+        5: { start: '13:00', end: '16:00' }, // Friday
+    };
+    
+    const appointmentDuration = 30; // in minutes
+
+    // --- VIEW MANAGEMENT ---
+    const hideAllViews = () => {
+        [loginFlowContainer, mainDashboardView, schedulerView, studentDashboardView, attendanceView, devAdminView].forEach(v => v.classList.add('hidden'));
+    }
+
+    const setupAndShowView = (role) => {
+        hideAllViews();
+        selectedDate = new Date();
+        currentUserRole = role.toLowerCase();
+        currentUserAppointments = []; 
+        
+        if (role === 'Student') {
+            const user = userData.student;
+            studentUserName.textContent = user.name;
+            studentUserRole.textContent = 'Student';
+            studentUserDP.src = user.dp;
+            studentDashboardView.classList.remove('hidden');
+            renderStudentAppointments();
+        } else { // Faculty or HOD
+            showMainDashboard(role);
+        }
+    };
+
+    const showMainDashboard = (role) => {
+        hideAllViews();
+        const user = (role.toLowerCase() === 'hod') ? userData.hod : userData.faculty;
+        mainDashUserName.textContent = user.name;
+        mainDashUserRole.textContent = role.toLowerCase() === 'hod' ? 'Head of Department' : 'Faculty';
+        mainDashUserDP.src = user.dp;
+        
+        if (role.toLowerCase() === 'faculty') {
+            bookWithHodBtn.classList.remove('hidden');
+        } else {
+            bookWithHodBtn.classList.add('hidden');
+        }
+
+        mainDashboardView.classList.remove('hidden');
+    }
+
+    const showScheduler = (role) => {
+        hideAllViews();
+        viewingCalendarFor = role; 
+        const user = userData[currentUserRole];
+        
+        schedulerUserRole.textContent = currentUserRole === 'hod' ? 'Head of Department' : 'Faculty';
+        schedulerUserName.textContent = user.name;
+        schedulerUserDP.src = user.dp;
+        
+        if (role === 'hod') {
+            schedulerTitle.textContent = "HOD Meeting Scheduler";
+        } else {
+            schedulerTitle.textContent = "My Meeting Scheduler";
+        }
+
+        schedulerView.classList.remove('hidden');
+        renderCalendar();
+        updateDateDisplayAndSlots();
+    }
+    
+    const showAttendance = () => {
+        hideAllViews();
+        const role = currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
+        const user = userData[currentUserRole];
+        attendanceUserRole.textContent = role === 'HOD' ? 'Head of Department' : 'Faculty';
+        attendanceUserName.textContent = user.name;
+        attendanceUserDP.src = user.dp;
+        attendanceView.classList.remove('hidden');
+        attendanceDatePicker.value = toYYYYMMDD(new Date());
+        renderAttendanceList();
+    }
+
+
+    const showLogin = () => {
+        hideAllViews();
+        currentUserRole = null;
+        loginCredentialsView.classList.add('hidden');
+        devLoginView.classList.add('hidden'); 
+        roleSelectionView.classList.remove('hidden');
+        loginFlowContainer.classList.remove('hidden');
+    };
+
+    // --- Dev Admin Functions ---
+    const showDevLogin = () => {
+        roleSelectionView.classList.add('hidden');
+        devLoginView.classList.remove('hidden');
+    }
+    
+    const showDevAdmin = () => {
+        hideAllViews();
+        loginFlowContainer.classList.add('hidden');
+        devAdminView.classList.remove('hidden');
+        renderUserWhitelist();
+    }
+
+    const renderUserWhitelist = () => {
+        userWhitelist.innerHTML = '';
+        if (Object.keys(allowedUsers).length === 0) {
+            userWhitelist.innerHTML = '<p class="text-gray-500 text-center">No users registered.</p>';
+            return;
+        }
+        Object.entries(allowedUsers).forEach(([email, role]) => {
+            const userEl = document.createElement('div');
+            userEl.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
+            userEl.innerHTML = `
+                <div>
+                    <p class="font-semibold text-gray-800">${email}</p>
+                    <p class="text-sm text-gray-600 uppercase">${role}</p>
+                </div>
+                <button data-email="${email}" class="remove-user-btn px-3 py-1 bg-red-100 text-red-700 text-sm font-semibold rounded-md hover:bg-red-200">Remove</button>
+            `;
+            userWhitelist.appendChild(userEl);
+        });
+        
+        userWhitelist.querySelectorAll('.remove-user-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const emailToRemove = e.target.dataset.email;
+                delete allowedUsers[emailToRemove];
+                renderUserWhitelist();
+                showToast(`User ${emailToRemove} removed.`, 'info');
+            });
+        });
+    }
+
+    const handleAddUser = (e) => {
+        e.preventDefault();
+        const email = newUserEmail.value;
+        const role = newUserRole.value;
+        if (!email) {
+            showToast('Please enter an email.', 'error');
+            return;
+        }
+        allowedUsers[email] = role;
+        renderUserWhitelist();
+        showToast(`User ${email} added as ${role}.`, 'success');
+        newUserEmail.value = '';
+    }
+    
+    // --- STUDENT/FACULTY DASHBOARD ---
+    const renderStudentAppointments = () => {
+        appointmentList.innerHTML = '';
+        if (currentUserAppointments.length === 0) {
+            appointmentList.innerHTML = `<p class="text-gray-500 text-center">You have no upcoming appointments.</p>`;
+            return;
+        }
+        
+        currentUserAppointments.sort((a, b) => {
+            const dateA = new Date(`${a.date}T${a.time}`);
+            const dateB = new Date(`${b.date}T${b.time}`);
+            if (dateA - dateB !== 0) return dateA - dateB;
+            
+            const aIsHod = a.with.includes('(HOD)');
+            const bIsHod = b.with.includes('(HOD)');
+            if (aIsHod && !bIsHod) return -1;
+            if (!aIsHod && bIsHod) return 1;
+            return 0;
+        });
+
+        currentUserAppointments.forEach(appt => {
+            const isHighPriority = appt.with.includes('(HOD)');
+            const apptEl = document.createElement('div');
+            apptEl.className = `bg-white/60 p-4 rounded-lg shadow-sm border ${isHighPriority ? 'border-l-4 border-l-red-500' : 'border-gray-200/80'} flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4`;
+            
+            const appointmentDate = new Date(appt.date + 'T' + appt.time);
+
+            let locationInfo = '';
+            if (appt.gmeet) {
+                locationInfo = `
+                        <div class="mt-2">
+                            <a href="${appt.gmeet}" target="_blank" class="text-sm inline-flex items-center gap-2 text-blue-600 font-semibold hover:underline">
+                                <ion-icon name="videocam-outline"></ion-icon>
+                                Join Google Meet
+                            </a>
+                        </div>
+                `;
+            } else if (appt.venue) {
+                 locationInfo = `
+                         <div class="mt-2">
+                             <p class="text-sm inline-flex items-center gap-2 text-gray-700 font-semibold">
+                                 <ion-icon name="location-outline"></ion-icon>
+                                 Venue: ${appt.venue}
+                             </p>
+                         </div>
+                 `;
+            }
+
+            const priorityBadge = isHighPriority ? `<span class="ml-2 text-xs font-bold uppercase bg-red-100 text-red-700 px-2 py-1 rounded-full">High Priority</span>` : '';
+
+
+            apptEl.innerHTML = `
+                <div class="flex-grow">
+                    <p class="font-bold text-lg text-indigo-800 flex items-center">${appt.reason} ${priorityBadge}</p>
+                    <p class="text-sm text-gray-700">With: <span class="font-semibold">${appt.with}</span></p>
+                    <p class="text-sm text-gray-600 mt-2 italic">"${appt.description}"</p>
+                    ${appt.notice ? `<div class="mt-2 p-2 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 text-sm rounded-r-md"><strong>Notice:</strong> ${appt.notice}</div>` : ''}
+                    ${locationInfo}
+                </div>
+                <div class="text-left sm:text-right text-sm bg-gray-100 px-3 py-2 rounded-lg self-start sm:self-center flex-shrink-0">
+                    <p class="font-semibold text-gray-800">${appointmentDate.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                    <p class="text-gray-600">${appt.time}</p>
+                </div>
+            `;
+            appointmentList.appendChild(apptEl);
+        });
+    };
+
+    // --- ATTENDANCE FUNCTIONS ---
+    const renderAttendanceList = () => {
+        const date = attendanceDatePicker.value;
+        const calendar = (viewingCalendarFor === 'hod') ? hodCalendar : facultyCalendar;
+        const appointmentsForDate = calendar[date];
+
+        attendanceList.innerHTML = '';
+        saveAttendanceBtn.disabled = true;
+
+        if (!appointmentsForDate || Object.keys(appointmentsForDate).length === 0) {
+            attendanceList.innerHTML = '<p class="text-gray-500 text-center p-4">No appointments scheduled for this day.</p>';
+            return;
+        }
+        
+        saveAttendanceBtn.disabled = false;
+        Object.entries(appointmentsForDate).forEach(([time, appt]) => {
+            const isGroup = appt.attendees && appt.attendees.length > 0;
+            const title = isGroup ? `${appt.reason} (Group)` : appt.name;
+            const students = isGroup ? appt.attendees : [appt];
+
+            const attendanceBlock = document.createElement('div');
+            attendanceBlock.className = 'mb-4';
+            
+            let studentListHTML = students.map((student, index) => `
+                <div class="flex items-center justify-between p-2 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} rounded-md">
+                    <p class="text-gray-700">${student.name}</p>
+                    <div class="flex gap-2">
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="radio" name="attendance-${time.replace(':','')}-${index}" value="present" class="form-radio text-green-500">
+                            <span class="text-sm text-green-600 font-medium">Present</span>
+                        </label>
+                        <label class="flex items-center gap-1 cursor-pointer">
+                            <input type="radio" name="attendance-${time.replace(':','')}-${index}" value="absent" class="form-radio text-red-500">
+                            <span class="text-sm text-red-600 font-medium">Absent</span>
+                        </label>
+                    </div>
+                </div>
+            `).join('');
+
+            attendanceBlock.innerHTML = `
+                <div class="bg-indigo-100 p-3 rounded-t-lg">
+                    <p class="font-bold text-indigo-800">${time} - ${title}</p>
+                </div>
+                <div class="border border-t-0 p-2 rounded-b-lg">
+                    ${studentListHTML}
+                </div>
+            `;
+            attendanceList.appendChild(attendanceBlock);
+        });
+    };
+
+
+    // --- SCHEDULER FUNCTIONS ---
+    const renderCalendar = () => {
+        const availability = (viewingCalendarFor === 'hod') ? hodAvailability : facultyAvailability;
+        const calendar = (viewingCalendarFor === 'hod') ? hodCalendar : facultyCalendar;
+
+        calendarGrid.innerHTML = '';
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        currentMonthYear.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+        
+        const firstDayOfMonth = new Date(year, month, 1);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+        const daysInMonth = lastDayOfMonth.getDate();
+        const startDayOfWeek = firstDayOfMonth.getDay();
+        
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        dayNames.forEach(day => {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'text-center font-semibold text-gray-600 text-sm';
+            dayEl.textContent = day;
+            calendarGrid.appendChild(dayEl);
+        });
+
+        for (let i = 0; i < startDayOfWeek; i++) {
+            calendarGrid.appendChild(document.createElement('div'));
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateCell = document.createElement('button');
+            const fullDate = new Date(year, month, day);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            dateCell.textContent = day;
+            dateCell.className = 'text-center p-2 rounded-full transition-colors w-10 h-10 mx-auto relative';
+            
+            const dateString = toYYYYMMDD(fullDate);
+            if (calendar[dateString] && Object.keys(calendar[dateString]).length > 0) {
+                 dateCell.innerHTML += '<span class="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-indigo-500"></span>';
+            }
+
+            if (fullDate < today) {
+                dateCell.classList.add('disabled-date');
+            } else if (availability[fullDate.getDay()]) {
+                dateCell.classList.add('hover:bg-indigo-100', 'cursor-pointer');
+            } else {
+                 dateCell.classList.add('disabled-date');
+            }
+
+            if (fullDate.toDateString() === new Date().toDateString()) {
+                dateCell.classList.add('bg-indigo-600', 'text-white', 'font-bold');
+            }
+            if (selectedDate && fullDate.toDateString() === selectedDate.toDateString()) {
+                dateCell.classList.add('bg-indigo-200', 'text-indigo-800', 'font-semibold');
+            }
+
+            dateCell.dataset.date = fullDate.toISOString();
+            calendarGrid.appendChild(dateCell);
+        }
+    };
+    
+    const generateTimeSlots = (date) => {
+        const availability = (viewingCalendarFor === 'hod') ? hodAvailability : facultyAvailability;
+        const calendar = (viewingCalendarFor === 'hod') ? hodCalendar : facultyCalendar;
+
+        timeSlotsContainer.innerHTML = '';
+        const dayOfWeek = date.getDay();
+        const dayAvailability = availability[dayOfWeek];
+        if (!dayAvailability) {
+            timeSlotsContainer.innerHTML = `<p class="text-gray-500">Not available on this day.</p>`;
+            return;
+        }
+
+        const dateString = toYYYYMMDD(date);
+        const bookedSlots = calendar[dateString] || {};
+        const startTime = new Date(`${dateString}T${dayAvailability.start}`);
+        const endTime = new Date(`${dateString}T${dayAvailability.end}`);
+        let currentTime = startTime;
+        let foundSlots = false;
+        
+        const loggedInUserEmail = userData[currentUserRole].email;
+
+        while (currentTime < endTime) {
+            const timeString = toHHMM(currentTime);
+            const appointment = bookedSlots[timeString];
+
+            if (appointment) {
+                foundSlots = true;
+                const slotEl = document.createElement('div');
+                slotEl.className = 'bg-indigo-100 p-3 mb-2 rounded-lg border border-indigo-300';
+                
+                let buttonsHTML = '';
+                if (appointment.createdBy === loggedInUserEmail) {
+                    buttonsHTML = `
+                        <div class="mt-3 flex gap-2">
+                            <button class="notify-btn flex-1 text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">Notify</button>
+                            <button class="cancel-btn flex-1 text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">Cancel</button>
+                        </div>
+                    `;
+                } else {
+                    buttonsHTML = `<p class="text-xs text-gray-500 italic mt-2">Booked by ${appointment.name}</p>`;
+                }
+
+                slotEl.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-bold text-indigo-800">${timeString} - Booked</p>
+                            <p class="text-sm text-gray-700">With: <span class="font-semibold">${appointment.name}</span></p>
+                        </div>
+                        <div class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full font-medium">${appointment.branch}</div>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-600">
+                        <span>${appointment.class}</span> | <span>Section ${appointment.section}</span>
+                    </div>
+                    <p class="text-sm text-gray-800 mt-2"><strong>Reason:</strong> ${appointment.reason}</p>
+                    ${buttonsHTML}
+                `;
+
+                if (appointment.createdBy === loggedInUserEmail) {
+                    slotEl.querySelector('.notify-btn').onclick = () => showNotifyModal(dateString, timeString, appointment);
+                    slotEl.querySelector('.cancel-btn').onclick = () => showCancelModal(dateString, timeString, appointment);
+                }
+                
+                timeSlotsContainer.appendChild(slotEl);
+            } else if (viewingCalendarFor === 'faculty' || viewingCalendarFor === 'hod') { // NEW: HOD can also manually book
+                foundSlots = true;
+                const slotEl = document.createElement('div');
+                slotEl.className = 'bg-gray-50 p-2 mb-2 rounded-lg border border-gray-200 text-center';
+                slotEl.innerHTML = `
+                    <p class="font-semibold text-gray-700">${timeString} - Available</p>
+                    <button class="book-for-student-btn mt-2 text-xs px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">Book Manually</button>
+                `;
+                slotEl.querySelector('.book-for-student-btn').onclick = () => showManualBookModal(dateString, timeString);
+                timeSlotsContainer.appendChild(slotEl);
+            }
+
+            currentTime.setMinutes(currentTime.getMinutes() + appointmentDuration);
+        }
+        
+        if (!foundSlots) {
+             timeSlotsContainer.innerHTML = `<p class="text-gray-500 text-center p-4">No available slots for this day.</p>`;
+        }
+    };
+    
+    const updateDateDisplayAndSlots = () => {
+         selectedDateDisplay.textContent = `For ${selectedDate.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' })}`;
+         generateTimeSlots(selectedDate);
+    }
+
+    const handleDateClick = (e) => {
+        const target = e.target.closest('button[data-date]');
+        if (!target || target.classList.contains('disabled-date')) return;
+        selectedDate = new Date(target.dataset.date);
+        renderCalendar();
+        updateDateDisplayAndSlots();
+    };
+
+    // --- MODAL & TOAST LOGIC ---
+    const showModal = (content, callback) => {
+        modalContentArea.innerHTML = content;
+        modalShell.classList.remove('hidden');
+        setTimeout(() => {
+            modalShell.classList.add('opacity-100');
+            modalContentArea.classList.add('scale-100');
+        }, 10);
+        
+        const closeModalButton = modalShell.querySelector('.close-modal-btn');
+        if (closeModalButton) {
+            closeModalButton.addEventListener('click', hideModal);
+        }
+        if (callback) callback();
+    };
+    
+    const hideModal = () => {
+        modalShell.classList.remove('opacity-100');
+        modalContentArea.classList.remove('scale-100');
+        setTimeout(() => {
+            modalShell.classList.add('hidden');
+            modalContentArea.innerHTML = '';
+        }, 300);
+    };
+    
+    const showEditProfileModal = () => {
+        const user = userData[currentUserRole];
+        let modalHTML = '';
+
+        if (currentUserRole === 'student') {
+            modalHTML = `
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-900">Edit Profile</h2>
+                        <button class="close-modal-btn text-gray-500 hover:text-gray-800"><ion-icon name="close-outline" class="text-2xl"></ion-icon></button>
+                    </div>
+                    <form id="profile-form">
+                        <div class="text-center mb-4">
+                            <img src="${user.dp}" class="h-24 w-24 rounded-full mx-auto border-4 border-white shadow-lg mb-2">
+                            <label class="cursor-pointer text-sm text-indigo-600 hover:underline">Change Picture<input type="file" class="hidden"></label>
+                        </div>
+                        <div class="space-y-3">
+                            <div><label class="text-sm font-medium text-gray-500">Name</label><input type="text" value="${user.name}" class="w-full p-2 border rounded mt-1 form-input-disabled" disabled></div>
+                            <div><label class="text-sm font-medium text-gray-500">USN</label><input type="text" value="${user.usn}" class="w-full p-2 border rounded mt-1 form-input-disabled" disabled></div>
+                            <div><label class="text-sm font-medium text-gray-500">Email</label><input type="email" value="${user.email}" class="w-full p-2 border rounded mt-1 form-input-disabled" disabled></div>
+                            <div><label class="text-sm font-medium text-gray-500">Phone</label><input type="text" value="${user.phone}" class="w-full p-2 border rounded mt-1 form-input-disabled" disabled></div>
+                            <div><label class="text-sm font-medium text-gray-500">Stream</label><input type="text" value="${user.stream} - ${user.section}" class="w-full p-2 border rounded mt-1 form-input-disabled" disabled></div>
+                        </div>
+                        <div class="mt-6 flex justify-end">
+                            <button type="submit" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        } else { // Faculty or HOD
+            const isHod = currentUserRole === 'hod';
+            modalHTML = `
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-900">Edit Profile</h2>
+                        <button class="close-modal-btn text-gray-500 hover:text-gray-800"><ion-icon name="close-outline" class="text-2xl"></ion-icon></button>
+                    </div>
+                    <form id="profile-form">
+                        <div class="text-center mb-4">
+                            <img src="${user.dp}" class="h-24 w-24 rounded-full mx-auto border-4 border-white shadow-lg mb-2">
+                            <label class="cursor-pointer text-sm text-indigo-600 hover:underline">Change Picture<input type="file" class="hidden"></label>
+                        </div>
+                        <div class="space-y-3">
+                            <div><label class="text-sm font-medium text-gray-700">Name</label><input type="text" id="profile-name" value="${user.name}" class="w-full p-2 border rounded mt-1"></div>
+                            <div><label class="text-sm font-medium text-gray-500">Email</label><input type="email" value="${user.email}" class="w-full p-2 border rounded mt-1 form-input-disabled" disabled></div>
+                            <div><label class="text-sm font-medium text-gray-700">Phone</label><input type="text" id="profile-phone" value="${user.phone}" class="w-full p-2 border rounded mt-1"></div>
+                            ${isHod ? `<div><label class="text-sm font-medium text-gray-700">Branch</label><input type="text" id="profile-branch" value="${user.branch}" class="w-full p-2 border rounded mt-1"></div>` : `<div><label class="text-sm font-medium text-gray-500">Faculty ID</label><input type="text" value="${user.id}" class="w-full p-2 border rounded mt-1 form-input-disabled" disabled></div>`}
+                        </div>
+                        <div class="mt-6 flex justify-end">
+                            <button type="submit" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        showModal(modalHTML, () => {
+            document.getElementById('profile-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (currentUserRole === 'student') {
+                    // Only DP can change, which is simulated
+                } else {
+                    const updatedName = document.getElementById('profile-name').value;
+                    const updatedPhone = document.getElementById('profile-phone').value;
+                    userData[currentUserRole].name = updatedName;
+                    userData[currentUserRole].phone = updatedPhone;
+
+                    if (currentUserRole === 'hod') {
+                        userData.hod.branch = document.getElementById('profile-branch').value;
+                    }
+                    // Re-render header
+                    schedulerUserName.textContent = updatedName;
+                }
+                hideModal();
+                showToast('Profile updated successfully!');
+            });
+        });
+    };
+
+    const showNotifyModal = (date, time, appointment) => {
+        const modalHTML = `
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Notify User</h2>
+                    <button class="close-modal-btn text-gray-500 hover:text-gray-800">
+                        <ion-icon name="close-outline" class="text-2xl"></ion-icon>
+                    </button>
+                </div>
+                <p class="text-gray-600 mb-2">Sending notification for appointment with <strong class="text-gray-800">${appointment.name}</strong> on ${date} at ${time}.</p>
+                <form id="notify-form">
+                    <textarea class="w-full p-2 border rounded mt-2" rows="4" placeholder="Enter your message..."></textarea>
+                    <div class="mt-4 space-y-2">
+                        <label class="flex items-center"><input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded" checked> <span class="ml-2">Send via Email (${appointment.email})</span></label>
+                        <label class="flex items-center"><input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded"> <span class="ml-2">Send via Phone (SMS)</span></label>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700">Send Notification</button>
+                    </div>
+                </form>
+            </div>`;
+        showModal(modalHTML, () => {
+            document.getElementById('notify-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                hideModal();
+                showToast('Notification sent successfully!');
+            });
+        });
+    };
+    
+    const showCancelModal = (date, time, appointment) => {
+        const modalHTML = `
+             <div class="p-6 text-center">
+                 <ion-icon name="warning-outline" class="text-5xl text-red-500 mx-auto"></ion-icon>
+                 <h2 class="text-2xl font-bold text-gray-900 mt-4">Cancel Appointment?</h2>
+                 <p class="text-gray-600 my-4">Are you sure you want to cancel the appointment with <strong>${appointment.name}</strong> on ${date} at ${time}?</p>
+                 <textarea id="cancel-reason" class="w-full p-2 border rounded" placeholder="Optional: Reason for cancellation..."></textarea>
+                 <div class="mt-6 flex justify-center gap-4">
+                     <button class="close-modal-btn px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Keep It</button>
+                     <button id="confirm-cancel-btn" class="px-6 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">Yes, Cancel</button>
+                 </div>
+             </div>
+        `;
+        showModal(modalHTML, () => {
+            document.getElementById('confirm-cancel-btn').addEventListener('click', () => {
+                const { reason } = appointment;
+                
+                const calendar = (viewingCalendarFor === 'hod') ? hodCalendar : facultyCalendar;
+                if(calendar[date] && calendar[date][time]) {
+                    delete calendar[date][time];
+                    if(Object.keys(calendar[date]).length === 0) {
+                        delete calendar[date];
+                    }
+                }
+                
+                // This is a simulation. In a real app, we'd also delete from the attendee's list.
+                // For this sim, just re-render the scheduler
+                hideModal();
+                renderCalendar();
+                generateTimeSlots(selectedDate);
+                
+                showToast('Appointment canceled and user notified.');
+            });
+        });
+    };
+    
+    const showManualBookModal = (date, time) => {
+        const modalHTML = `
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Book Manually</h2>
+                    <button class="close-modal-btn text-gray-500 hover:text-gray-800"><ion-icon name="close-outline" class="text-2xl"></ion-icon></button>
+                </div>
+                <p class="text-gray-600 mb-4">Manually booking on your calendar for <strong>${date}</strong> at <strong>${time}</strong>.</p>
+                <form id="manual-book-form">
+                    <div class="space-y-3">
+                        <div><label class="text-sm font-medium text-gray-700">Name (Student/Faculty)</label>
+                            <input type="text" id="user-name" class="w-full p-2 border rounded mt-1" required></div>
+                        <div><label class="text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="user-email" class="w-full p-2 border rounded mt-1" required></div>
+                        <div><label class="text-sm font-medium text-gray-700">Reason</label>
+                            <input type="text" id="appt-reason" class="w-full p-2 border rounded mt-1" required></div>
+                        <div><label class="text-sm font-medium text-gray-700">USN / ID / Class</label>
+                            <input type="text" id="user-class" class="w-full p-2 border rounded mt-1"></div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button type="button" class="close-modal-btn px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700">Confirm Booking</button>
+                    </div>
+                    </form>
+            </div>`;
+        
+        showModal(modalHTML, () => {
+            document.getElementById('manual-book-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newAppt = {
+                    name: document.getElementById('user-name').value,
+                    email: document.getElementById('user-email').value,
+                    reason: document.getElementById('appt-reason').value,
+                    class: document.getElementById('user-class').value,
+                    branch: 'Manual', 
+                    section: 'N/A',
+                    createdBy: userData[currentUserRole].email // Created by logged-in HOD/Faculty
+                };
+                
+                const calendar = (viewingCalendarFor === 'hod') ? hodCalendar : facultyCalendar;
+                if (!calendar[date]) calendar[date] = {};
+                calendar[date][time] = newAppt;
+
+                hideModal();
+                showToast('Appointment created successfully!');
+                generateTimeSlots(selectedDate); // Refresh time slots
+            });
+        });
+    };
+
+    const handleFileUploadAndShowScheduler = (fileInputId, attendeeRole, targetCalendarRole) => {
+        const fileInput = modalShell.querySelector(`#${fileInputId}`); // Use modalShell
+        if (!fileInput || fileInput.files.length === 0) {
+            showToast('Please select a file to upload.', 'error');
+            return;
+        }
+
+        hideModal();
+        showToast('File uploaded successfully! Please fill in details.', 'success');
+        
+        setTimeout(() => {
+            let simulatedContacts = [];
+            if (attendeeRole === 'student') {
+                simulatedContacts = [
+                    { name: 'Imported Student 1', email: 's1@example.com', phone: '555-0101' },
+                    { name: 'Imported Student 2', email: 's2@example.com', phone: '555-0102' },
+                ];
+            } else if (attendeeRole === 'faculty') {
+                simulatedContacts = [
+                    { name: 'Imported Faculty 1', email: 'f1@example.com', phone: '555-0201' },
+                    { name: 'Imported Faculty 2', email: 'f2@example.com', phone: '555-0202' },
+                ];
+            }
+            showBulkScheduleModal(simulatedContacts, attendeeRole, targetCalendarRole);
+        }, 500);
+    };
+
+    const showBulkScheduleModal = (contacts, attendeeRole, targetCalendarRole) => {
+        const calendar = (targetCalendarRole === 'hod') ? hodCalendar : facultyCalendar;
+        const availability = (targetCalendarRole === 'hod') ? hodAvailability : facultyAvailability;
+
+        const dateString = toYYYYMMDD(selectedDate);
+        const dayOfWeek = selectedDate.getDay();
+        const dayAvailability = availability[dayOfWeek];
+        let availableSlots = [];
+
+        if (dayAvailability) {
+            const bookedSlots = calendar[dateString] || {};
+            let currentTime = new Date(`${dateString}T${dayAvailability.start}`);
+            const endTime = new Date(`${dateString}T${dayAvailability.end}`);
+
+            while (currentTime < endTime) {
+                const timeString = toHHMM(currentTime);
+                if (!bookedSlots[timeString]) {
+                    availableSlots.push(timeString);
+                }
+                currentTime.setMinutes(currentTime.getMinutes() + appointmentDuration);
+            }
+        }
+        
+        const slotOptions = availableSlots.length > 0 
+            ? availableSlots.map(slot => `<option value="${slot}">${slot}</option>`).join('')
+            : '<option value="" disabled>No available slots on this day</option>';
+        
+        const title = attendeeRole === 'student' ? 'Schedule Group Meeting' : 'Schedule Faculty Meeting';
+
+        const modalHTML = `
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">${title}</h2>
+                    <button class="close-modal-btn text-gray-500 hover:text-gray-800"><ion-icon name="close-outline" class="text-2xl"></ion-icon></button>
+                </div>
+                <p class="text-gray-600 mb-4">Scheduling for <strong>${contacts.length}</strong> imported ${attendeeRole}s on <strong>${selectedDate.toLocaleDateString()}</strong>.</p>
+
+                <form id="bulk-schedule-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="purpose" class="text-sm font-medium text-gray-700">Purpose / Title</label>
+                            <input type="text" id="purpose" class="w-full p-2 border rounded mt-1" required placeholder="e.g., Final Year Project Review">
+                        </div>
+                        <div>
+                            <label for="description" class="text-sm font-medium text-gray-700">Description / Notes</label>
+                            <textarea id="description" class="w-full p-2 border rounded mt-1" rows="3" placeholder="e.g., All students must bring their logbooks."></textarea>
+                        </div>
+                        <div>
+                            <label for="time-slot" class="text-sm font-medium text-gray-700">Select Time Slot</label>
+                            <select id="time-slot" class="w-full p-2 border rounded mt-1" ${availableSlots.length === 0 ? 'disabled' : ''}>
+                                ${slotOptions}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button type="button" class="close-modal-btn px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Cancel</button>
+                        <button type="submit" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700" ${availableSlots.length === 0 ? 'disabled' : ''}>Schedule For All</button>
+                    </div>
+                    </form>
+            </div>`;
+
+        showModal(modalHTML, () => {
+            document.getElementById('bulk-schedule-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const purpose = document.getElementById('purpose').value;
+                const description = document.getElementById('description').value;
+                const timeSlot = document.getElementById('time-slot').value;
+                
+                if (!purpose || !timeSlot) {
+                    showToast('Please provide a purpose and select a time slot.', 'error');
+                    return;
+                }
+                
+                const newAppt = {
+                    name: `Group Meeting (${contacts.length} ${attendeeRole}s)`,
+                    reason: purpose,
+                    branch: attendeeRole.toUpperCase(),
+                    section: 'ALL', 
+                    class: 'Imported Session',
+                    attendees: contacts,
+                    createdBy: userData[currentUserRole].email 
+                };
+
+                const calendar = (targetCalendarRole === 'hod') ? hodCalendar : facultyCalendar;
+                if (!calendar[dateString]) calendar[dateString] = {};
+                calendar[dateString][timeSlot] = newAppt;
+                
+                currentUserAppointments.push({
+                    with: `Group (${attendeeRole}s)`,
+                    date: dateString,
+                    time: timeSlot,
+                    reason: purpose,
+                    description: description || `Group meeting.`,
+                    notice: `This is a group session with ${contacts.length} attendees.`,
+                });
+
+                hideModal();
+                renderCalendar();
+                updateDateDisplayAndSlots();
+                showToast(`Meeting for ${contacts.length} ${attendeeRole}s scheduled!`);
+            });
+        });
+    };
+
+    const showImportModal = () => {
+        let modalHTML = '';
+        const targetCalendarRole = viewingCalendarFor; 
+
+        // NEW: Excel file types
+        const excelAccept = ".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel";
+
+        if (currentUserRole === 'hod') {
+            modalHTML = `
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-2xl font-bold text-gray-900">Import Data (for HOD)</h2>
+                        <button class="close-modal-btn text-gray-500 hover:text-gray-800"><ion-icon name="close-outline" class="text-2xl"></ion-icon></button>
+                    </div>
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-6" id="import-tabs">
+                            <button data-tab="students" class="tab-btn border-indigo-500 text-indigo-600 whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm">Import Students</button>
+                            <button data-tab="faculty" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-3 px-1 border-b-2 font-semibold text-sm">Import Faculty</button>
+                        </nav>
+                    </div>
+                    
+                    <div id="students-tab-content" class="tab-content mt-4">
+                        <p class="text-gray-600 mb-4 text-sm">Upload student contact list (.csv, .xls, .xlsx).</p>
+                        <input type="file" id="student-file-input" class="hidden" accept="${excelAccept}">
+                        <label for="student-file-input" class="w-full p-6 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer block hover:border-indigo-500">
+                           <ion-icon name="document-text-outline" class="text-4xl text-gray-400 mx-auto"></ion-icon>
+                           <p class="mt-1 text-sm text-gray-500">Click to browse or drag & drop</p>
+                        </label>
+                        <p id="student-file-name" class="text-center text-xs text-gray-500 mt-2 truncate"></p>
+                    </div>
+
+                    <div id="faculty-tab-content" class="tab-content mt-4 hidden">
+                        <p class="text-gray-600 mb-4 text-sm">Upload faculty contact list (.csv, .xls, .xlsx).</p>
+                         <input type="file" id="faculty-file-input" class="hidden" accept="${excelAccept}">
+                        <label for="faculty-file-input" class="w-full p-6 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer block hover:border-indigo-500">
+                           <ion-icon name="document-text-outline" class="text-4xl text-gray-400 mx-auto"></ion-icon>
+                           <p class="mt-1 text-sm text-gray-500">Click to browse or drag & drop</p>
+                        </label>
+                        <p id="faculty-file-name" class="text-center text-xs text-gray-500 mt-2 truncate"></p>
+                    </div>
+                </div>`;
+        } else { // Faculty
+            modalHTML = `
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Import Student Data</h2>
+                    <button class="close-modal-btn text-gray-500 hover:text-gray-800"><ion-icon name="close-outline" class="text-2xl"></ion-icon></button>
+                </div>
+                <p class="text-gray-600 mb-4">Upload a file with student contact details (.csv, .xls, .xlsx).</p>
+                <input type="file" id="student-file-input" class="hidden" accept="${excelAccept}">
+                <label for="student-file-input" class="w-full p-8 border-2 border-dashed border-gray-300 rounded-lg text-center cursor-pointer block hover:border-indigo-500">
+                   <ion-icon name="document-text-outline" class="text-5xl text-gray-400 mx-auto"></ion-icon>
+                   <p class="mt-2 text-gray-500">Click to browse files</p>
+                </label>
+                <p id="student-file-name" class="text-center text-sm text-gray-500 mt-2 truncate"></p>
+            </div>`;
+        }
+
+        showModal(modalHTML, () => {
+             const setupFileInput = (inputId, nameId, attendeeRole, targetCalendarRole) => {
+                 const fileInput = modalShell.querySelector(`#${inputId}`); 
+                 const fileNameDisplay = modalShell.querySelector(`#${nameId}`);
+                 if (fileInput) {
+                     fileInput.addEventListener('change', (e) => {
+                         const file = e.target.files[0];
+                         if(file) {
+                             fileNameDisplay.textContent = file.name;
+                             handleFileUploadAndShowScheduler(inputId, attendeeRole, targetCalendarRole);
+                         }
+                     });
+                 }
+             };
+            
+            if (currentUserRole === 'hod') {
+                const tabs = modalShell.querySelectorAll('.tab-btn');
+                const contents = modalShell.querySelectorAll('.tab-content');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        tabs.forEach(t => {
+                            t.classList.remove('border-indigo-500', 'text-indigo-600');
+                            t.classList.add('border-transparent', 'text-gray-500'); // NEW: Ensure deselection
+                        });
+                        tab.classList.add('border-indigo-500', 'text-indigo-600');
+                        tab.classList.remove('border-transparent', 'text-gray-500'); // NEW: Ensure selection
+                        
+                        contents.forEach(c => c.classList.add('hidden'));
+                        const contentToShow = modalShell.querySelector(`#${tab.dataset.tab}-content`); // NEW: Fixed selector
+                        if (contentToShow) {
+                            contentToShow.classList.remove('hidden');
+                        }
+                    });
+                });
+                setupFileInput('student-file-input', 'student-file-name', 'student', 'hod');
+                setupFileInput('faculty-file-input', 'faculty-file-name', 'faculty', 'hod');
+            } else { // Faculty
+                setupFileInput('student-file-input', 'student-file-name', 'student', 'faculty');
+            }
+        });
+    };
+    
+
+    // --- Student/Faculty Booking Modal Functions ---
+    const showBookingModal = (targetRole) => {
+        bookingModalDate = new Date();
+        bookingModalSelectedDate = new Date();
+        
+        const availability = (targetRole === 'hod') ? hodAvailability : facultyAvailability;
+        const targetName = (targetRole === 'hod') ? userData.hod.name : userData.faculty.name;
+
+        const modalHTML = `
+            <div class="p-4 sm:p-6 w-full max-w-2xl"> 
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Book with ${targetName}</h2>
+                    <button class="close-modal-btn text-gray-500 hover:text-gray-800"><ion-icon name="close-outline" class="text-2xl"></ion-icon></button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <button id="modal-prev-month" class="p-2 rounded-full hover:bg-black/10 transition-colors">
+                                <ion-icon name="chevron-back-outline" class="text-xl text-gray-700"></ion-icon>
+                            </button>
+                            <h2 id="modal-month-year" class="text-lg font-semibold text-gray-900"></h2>
+                            <button id="modal-next-month" class="p-2 rounded-full hover:bg-black/10 transition-colors">
+                                <ion-icon name="chevron-forward-outline" class="text-xl text-gray-700"></ion-icon>
+                            </button>
+                        </div>
+                        <div id="modal-calendar-grid" class="grid grid-cols-7 gap-1">
+                            </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-1">Available Slots</h3>
+                        <p id="modal-selected-date" class="text-sm text-gray-600 mb-4">Select a date</p>
+                        <div id="modal-time-slots" class="max-h-[300px] overflow-y-auto custom-scrollbar pr-2 space-y-2">
+                            <p class="text-gray-500 text-center p-4">Please select a valid date from the calendar to see available slots.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modalContentArea.classList.remove('max-w-md');
+        modalContentArea.classList.add('max-w-2xl');
+
+        showModal(modalHTML, () => {
+            document.getElementById('modal-prev-month').onclick = () => {
+                bookingModalDate.setMonth(bookingModalDate.getMonth() - 1);
+                renderBookingCalendar(targetRole);
+            };
+            document.getElementById('modal-next-month').onclick = () => {
+                bookingModalDate.setMonth(bookingModalDate.getMonth() + 1);
+                renderBookingCalendar(targetRole);
+            };
+            document.getElementById('modal-calendar-grid').onclick = (e) => handleBookingDateClick(e, targetRole);
+            renderBookingCalendar(targetRole); 
+        });
+
+        modalShell.addEventListener('transitionend', () => {
+            if (modalShell.classList.contains('hidden')) {
+                modalContentArea.classList.add('max-w-md');
+                modalContentArea.classList.remove('max-w-2xl');
+            }
+        }, { once: true });
+    };
+
+    const renderBookingCalendar = (targetRole) => {
+        const availability = (targetRole === 'hod') ? hodAvailability : facultyAvailability;
+
+        const grid = document.getElementById('modal-calendar-grid');
+        const monthYearDisplay = document.getElementById('modal-month-year');
+        if (!grid || !monthYearDisplay) return; 
+
+        grid.innerHTML = '';
+        const year = bookingModalDate.getFullYear();
+        const month = bookingModalDate.getMonth();
+        monthYearDisplay.textContent = `${bookingModalDate.toLocaleString('default', { month: 'long' })} ${year}`;
+        
+        const firstDayOfMonth = new Date(year, month, 1);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+        const daysInMonth = lastDayOfMonth.getDate();
+        const startDayOfWeek = firstDayOfMonth.getDay();
+        
+        const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+        dayNames.forEach(day => {
+            const dayEl = document.createElement('div');
+            dayEl.className = 'text-center font-semibold text-gray-600 text-xs';
+            dayEl.textContent = day;
+            grid.appendChild(dayEl);
+        });
+
+        for (let i = 0; i < startDayOfWeek; i++) {
+            grid.appendChild(document.createElement('div'));
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateCell = document.createElement('button');
+            const fullDate = new Date(year, month, day);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            dateCell.textContent = day;
+            dateCell.className = 'text-center p-2 rounded-full transition-colors w-9 h-9 mx-auto text-sm';
+            
+            if (fullDate < today) {
+                dateCell.classList.add('disabled-date');
+            } else if (availability[fullDate.getDay()]) {
+                dateCell.classList.add('hover:bg-indigo-100', 'cursor-pointer');
+            } else {
+                 dateCell.classList.add('disabled-date');
+            }
+
+            if (fullDate.toDateString() === new Date().toDateString()) {
+                dateCell.classList.add('bg-indigo-600', 'text-white', 'font-bold');
+            }
+            if (bookingModalSelectedDate && fullDate.toDateString() === bookingModalSelectedDate.toDateString()) {
+                dateCell.classList.add('bg-indigo-200', 'text-indigo-800', 'font-semibold');
+            }
+
+            dateCell.dataset.date = fullDate.toISOString();
+            grid.appendChild(dateCell);
+        }
+    };
+
+    const handleBookingDateClick = (e, targetRole) => {
+        const target = e.target.closest('button[data-date]');
+        if (!target || target.classList.contains('disabled-date')) return;
+        
+        bookingModalSelectedDate = new Date(target.dataset.date);
+        renderBookingCalendar(targetRole); 
+        
+        document.getElementById('modal-selected-date').textContent = `For ${bookingModalSelectedDate.toLocaleDateString('default', { weekday: 'long', day: 'numeric' })}`;
+        generateAvailableTimeSlots(bookingModalSelectedDate, targetRole);
+    };
+
+    const generateAvailableTimeSlots = (date, targetRole) => {
+        const availability = (targetRole === 'hod') ? hodAvailability : facultyAvailability;
+        const calendar = (targetRole === 'hod') ? hodCalendar : facultyCalendar;
+
+        const slotsContainer = document.getElementById('modal-time-slots');
+        if (!slotsContainer) return;
+        slotsContainer.innerHTML = '';
+
+        const dayOfWeek = date.getDay();
+        const dayAvailability = availability[dayOfWeek];
+        if (!dayAvailability) {
+            slotsContainer.innerHTML = `<p class="text-gray-500 text-center p-4">Not available on this day.</p>`;
+            return;
+        }
+
+        const dateString = toYYYYMMDD(date);
+        const bookedSlots = calendar[dateString] || {};
+        const startTime = new Date(`${dateString}T${dayAvailability.start}`);
+        const endTime = new Date(`${dateString}T${dayAvailability.end}`);
+        let currentTime = startTime;
+        let foundSlots = false;
+
+        while (currentTime < endTime) {
+            const timeString = toHHMM(currentTime);
+            const isBooked = bookedSlots[timeString];
+
+            if (!isBooked) {
+                foundSlots = true;
+                const slotBtn = document.createElement('button');
+                slotBtn.className = 'w-full p-2 bg-indigo-500 text-white text-sm font-semibold rounded-lg hover:bg-indigo-600 transition-colors';
+                slotBtn.textContent = timeString;
+                slotBtn.onclick = () => showBookingConfirmationModal(dateString, timeString, targetRole);
+                slotsContainer.appendChild(slotBtn);
+            }
+            currentTime.setMinutes(currentTime.getMinutes() + appointmentDuration);
+        }
+        
+        if (!foundSlots) {
+             slotsContainer.innerHTML = `<p class="text-gray-500 text-center p-4">No available slots for this day.</p>`;
+        }
+    };
+
+    const showBookingConfirmationModal = (date, time, targetRole) => {
+        const targetName = (targetRole === 'hod') ? userData.hod.name : userData.faculty.name;
+        
+        const modalHTML = `
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Confirm Booking</h2>
+                    <button class="close-modal-btn text-gray-500 hover:text-gray-800"><ion-icon name="close-outline" class="text-2xl"></ion-icon></button>
+                </div>
+                <p class="text-gray-600 mb-4">You are booking an appointment with <strong>${targetName}</strong> for <strong>${date}</strong> at <strong>${time}</strong>.</p>
+                <form id="student-book-form">
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">Reason / Purpose</label>
+                            <input type="text" id="appt-reason" class="w-full p-2 border rounded mt-1" required placeholder="e.g., Project Approval">
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">Description (Optional)</label>
+                            <textarea id="appt-desc" class="w-full p-2 border rounded mt-1" rows="3" placeholder="Add more details..."></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button type="button" id="back-to-calendar-btn" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Back</button>
+                        <button type="submit" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700">Confirm Booking</button>
+                    </div>
+                </form>
+            </div>`;
+
+        modalContentArea.classList.remove('max-w-2xl');
+        modalContentArea.classList.add('max-w-md');
+        
+        showModal(modalHTML, () => {
+            document.getElementById('back-to-calendar-btn').onclick = () => showBookingModal(targetRole);
+
+            document.getElementById('student-book-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const reason = document.getElementById('appt-reason').value;
+                const description = document.getElementById('appt-desc').value;
+                
+                const user = userData[currentUserRole]; 
+                const calendar = (targetRole === 'hod') ? hodCalendar : facultyCalendar;
+
+                const newAppt = {
+                    name: user.name,
+                    reason: reason,
+                    branch: user.stream || user.id, 
+                    section: user.section || 'Faculty',
+                    class: user.usn || 'Staff',
+                    email: user.email,
+                    createdBy: user.email 
+                };
+
+                if (!calendar[date]) calendar[date] = {};
+                calendar[date][time] = newAppt;
+
+                currentUserAppointments.push({
+                    with: `${targetName} ${targetRole === 'hod' ? '(HOD)' : '(Faculty)'}`,
+                    date: date,
+                    time: time,
+                    reason: reason,
+                    description: description || 'No description provided.',
+                    gmeet: null,
+                    venue: null,
+                    createdBy: user.email
+                });
+
+                hideModal();
+                showToast('Appointment booked successfully!');
+                renderStudentAppointments(); 
+            });
+        });
+    };
+
+    const showToast = (message, type = 'success') => {
+        toast.classList.remove('bg-green-500', 'bg-blue-500', 'bg-red-500');
+        toastIcon.removeAttribute('name');
+
+        if (type === 'success') {
+            toast.classList.add('bg-green-500');
+            toastIcon.setAttribute('name', 'checkmark-circle');
+        } else if (type === 'info') {
+            toast.classList.add('bg-blue-500');
+            toastIcon.setAttribute('name', 'information-circle');
+        } else if (type === 'error') {
+            toast.classList.add('bg-red-500');
+            toastIcon.setAttribute('name', 'alert-circle');
+        }
+
+        toastMessage.textContent = message;
+        toast.classList.add('opacity-100', 'translate-y-0');
+        setTimeout(() => {
+            toast.classList.remove('opacity-100', 'translate-y-0');
+        }, 4000);
+    };
+
+    // --- EVENT LISTENERS ---
+    
+    roleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const role = button.dataset.role;
+            currentUserRole = role; 
+            loginRoleTitle.textContent = `${role} Login`;
+            roleSelectionView.classList.add('hidden');
+            loginCredentialsView.classList.remove('hidden');
+        });
+    });
+
+    backToRoleBtn.addEventListener('click', () => {
+        loginCredentialsView.classList.add('hidden');
+        roleSelectionView.classList.remove('hidden');
+        currentUserRole = null;
+    });
+
+    loginContinueBtn.addEventListener('click', () => {
+        const email = emailInput.value.trim();
+        const pass = passwordInput.value.trim();
+        
+        if (!currentUserRole) {
+            showToast('Please select a role first.', 'error');
+            return;
+        }
+
+        if (email === '' || pass === '') {
+            showToast('Please enter your email and password.', 'error');
+            return;
+        }
+
+        const expectedRole = allowedUsers[email];
+        
+        if (expectedRole && expectedRole === currentUserRole.toLowerCase()) {
+            setupAndShowView(currentUserRole);
+        } else if (expectedRole && expectedRole !== currentUserRole.toLowerCase()) {
+            showToast('Email is registered, but for a different role.', 'error');
+        } else {
+            showToast('This email is not registered.', 'error');
+        }
+    });
+    
+    allLogoutBtns.forEach(btn => btn.addEventListener('click', showLogin));
+
+    // --- Dev Admin Listeners ---
+    showDevLoginBtn.addEventListener('click', showDevLogin);
+    backToRoleFromDevBtn.addEventListener('click', showLogin);
+    devLoginContinueBtn.addEventListener('click', () => {
+        if (devPasswordInput.value === 'admin123') {
+            showDevAdmin();
+            devPasswordInput.value = '';
+        } else {
+            showToast('Incorrect admin password.', 'error');
+        }
+    });
+    addUserForm.addEventListener('submit', handleAddUser);
+    
+    // --- Dashboard Listeners ---
+    goToSchedulerBtn.addEventListener('click', () => {
+        if (currentUserRole === 'hod') {
+            showScheduler('hod');
+        } else if (currentUserRole === 'faculty') {
+            showScheduler('faculty');
+        }
+    });
+    goToAttendanceBtn.addEventListener('click', showAttendance);
+    bookWithHodBtn.addEventListener('click', () => showBookingModal('hod')); 
+    backToMainDashBtn.addEventListener('click', () => showMainDashboard(currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1)));
+    backToMainDashFromAttendanceBtn.addEventListener('click', () => showMainDashboard(currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1)));
+    
+    importDataBtn.addEventListener('click', showImportModal);
+    
+    [studentUserDP, schedulerUserDP, mainDashUserDP, attendanceUserDP].forEach(dp => {
+        dp.addEventListener('click', showEditProfileModal);
+    });
+    
+    prevMonthBtn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+    });
+    nextMonthBtn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+    });
+    
+    calendarGrid.addEventListener('click', handleDateClick);
+
+    attendanceDatePicker.addEventListener('change', renderAttendanceList);
+    saveAttendanceBtn.addEventListener('click', () => {
+        showToast('Attendance saved successfully!');
+    });
+    
+    // NEW: Student book button listeners
+    bookWithHodBtnStudent.addEventListener('click', () => showBookingModal('hod'));
+    bookWithFacultyBtnStudent.addEventListener('click', () => showBookingModal('faculty'));
+    // END NEW
+
+    // --- INITIALIZATION ---
+    showLogin();
+});
+</script>
+
+</body>
+</html>
